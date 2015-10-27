@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
+using System.IO;
 using BarcodeLib;
 
 namespace Test_tool4product_line
@@ -154,8 +155,10 @@ namespace Test_tool4product_line
                 //if (myRP.reportBuff[0] == 0x00)
                 if ((myRP.reportBuff[0] & 0x27) == 0x00)
                 {
+                    lib_dev1_ng.Items.Add(lb_dev1_rlt.Text);
                     lb_dev1_rlt.Text = "OK"+" , -"+Convert.ToString((int)(myRP.reportBuff[7]-128))+"dB";
                     lb_dev1_rlt.ForeColor = Color.Green;
+                    
                 }
                 else
                 {
@@ -200,13 +203,19 @@ namespace Test_tool4product_line
                     byte_macaddr[cid] = myRP.reportBuff[6 - cid];
                 }
                 string str_macaddr = USBHID.ByteToHexString(byte_macaddr);
+
                 this.pb_dev1_barcode.Image = null;
                 System.Drawing.Image image;
                 int width = pb_dev1_barcode.Size.Width, height = pb_dev1_barcode.Size.Height;
                 string fileSavePath = AppDomain.CurrentDomain.BaseDirectory + "barcode.jpg";
+
                 GetBarcode(height, width, BarcodeLib.TYPE.CODE128, str_macaddr, out image, fileSavePath);
 
-                this.pb_dev1_barcode.Image = Image.FromFile("barcode.jpg");
+                FileStream fileStream = new FileStream(fileSavePath, FileMode.Open, FileAccess.Read);
+                this.pb_dev1_barcode.Image = Image.FromStream(fileStream);
+                fileStream.Close();
+                fileStream.Dispose();
+                //this.pb_dev1_barcode.Image = Image.FromFile("barcode.jpg");
             }
         }
 
