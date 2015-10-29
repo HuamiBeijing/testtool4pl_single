@@ -48,7 +48,7 @@ namespace Test_tool4product_line
                 this.lb_hiddevice.Invoke((MethodInvoker)delegate()
                 {
                     cleardevlist(); 
-                });                
+                });              
             }
 
         }
@@ -130,7 +130,7 @@ namespace Test_tool4product_line
                 lib_dev1_ng.Items.Clear();
                 this.pb_dev1_barcode.Image = null;
 
-                enumdevice.Abort();
+                /*enumdevice.Abort();
                 try
                 {
                     usbHIDreality.CloseDevice();
@@ -138,7 +138,7 @@ namespace Test_tool4product_line
                 catch (Exception err)
                 {
                     err.ToString();
-                }
+                }*/
             }
         }
 
@@ -153,12 +153,38 @@ namespace Test_tool4product_line
             {
                 lib_dev1_ng.Items.Clear();
                 //if (myRP.reportBuff[0] == 0x00)
+
                 if ((myRP.reportBuff[0] & 0x27) == 0x00)
                 {
                     lib_dev1_ng.Items.Add(lb_dev1_rlt.Text);
-                    lb_dev1_rlt.Text = "OK"+" , -"+Convert.ToString((int)(myRP.reportBuff[7]-128))+"dB";
-                    lb_dev1_rlt.ForeColor = Color.Green;
+                    if ((int)(myRP.reportBuff[7] - 128) <= Convert.ToInt16(this.rssimin.Text.Substring(1)))
+                    {
+                        lb_dev1_rlt.Text = "OK" + " , -" + Convert.ToString((int)(myRP.reportBuff[7] - 128)) + "dB";
+                        lb_dev1_rlt.ForeColor = Color.Green;
+                    }
+                    else
+                    {
+                        lb_dev1_rlt.Text = "信号强度低";
+                        lb_dev1_rlt.ForeColor = Color.Red;
+                    }
                     
+                }
+                //receive disconnect report
+                else if (System.Text.Encoding.ASCII.GetString(myRP.reportBuff).IndexOf("disconne") > -1)
+                {
+                    this.lb_dev1_rlt.Text = "测试结果";
+                    lb_dev1_rlt.ForeColor = Color.Blue;
+                }
+                else if (System.Text.Encoding.ASCII.GetString(myRP.reportBuff).IndexOf("goahead") > -1)
+                {
+                    this.lb_dev1_rlt.Text = "检测中，勿开箱";
+                    lb_dev1_rlt.ForeColor = Color.Red;
+                }
+                //receive scantimeout report
+                else if (System.Text.Encoding.ASCII.GetString(myRP.reportBuff).IndexOf("nodevice") > -1)
+                {
+                    this.lb_dev1_rlt.Text = "搜索失败";
+                    lb_dev1_rlt.ForeColor = Color.Red;
                 }
                 else
                 {
